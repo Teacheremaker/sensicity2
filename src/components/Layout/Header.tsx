@@ -26,21 +26,36 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
 
           {/* Navigation principale */}
           <nav className="hidden md:flex space-x-8">
-            <a href="#dashboard" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'dashboard' }))}
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+            >
               Tableau de bord
-            </a>
-            <a href="#equipment" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-              Équipements
-            </a>
-            <a href="#compliance" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+            </button>
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'equipment' }))}
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+            >
+              Inventaire
+            </button>
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'compliance' }))}
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+            >
               Conformité
-            </a>
-            <a href="#logbook" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+            </button>
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'logbook' }))}
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+            >
               Main courante
-            </a>
-            <a href="#documents" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+            </button>
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'documents' }))}
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+            >
               Documents
-            </a>
+            </button>
           </nav>
 
           {/* Actions utilisateur */}
