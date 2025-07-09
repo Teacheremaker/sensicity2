@@ -5,6 +5,7 @@ import { Sidebar } from './components/Layout/Sidebar';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { EquipmentList } from './components/Equipment/EquipmentList';
 import { LoginForm } from './components/Auth/LoginForm';
+import { LogbookList } from './components/Logbook/LogbookList';
 
 // Simulation d'un utilisateur connecté
 const mockUser = {
@@ -76,12 +77,7 @@ function App() {
           </div>
         );
       case 'logbook':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-gray-900">Main Courante</h2>
-            <p className="text-gray-600 mt-2">Module en cours de développement</p>
-          </div>
-        );
+        return <LogbookList />;
       case 'access-requests':
         return (
           <div className="text-center py-12">

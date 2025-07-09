@@ -54,6 +54,33 @@ export interface LogbookEntry {
   equipmentId?: string;
   isJudicialRequisition: boolean;
   createdAt: string;
+  eventType: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  location?: string;
+  status: 'new' | 'in_progress' | 'closed' | 'awaiting_requisition';
+  actions: LogbookAction[];
+  videoBookmarks?: VideoBookmark[];
+  updatedAt: string;
+}
+
+export interface LogbookAction {
+  id: number;
+  logbookEntryId: number;
+  actionType: string;
+  description: string;
+  timestamp: string;
+  userId: string;
+  createdAt: string;
+}
+
+export interface VideoBookmark {
+  id: number;
+  logbookEntryId: number;
+  equipmentId: string;
+  startTime: string;
+  endTime: string;
+  description?: string;
+  createdAt: string;
 }
 
 export interface AccessRequest {
