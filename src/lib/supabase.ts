@@ -175,6 +175,11 @@ export interface Database {
           equipment_id: string | null;
           is_judicial_requisition: boolean;
           created_at: string;
+          event_type: string;
+          priority: 'low' | 'medium' | 'high' | 'critical';
+          location: string | null;
+          status: 'new' | 'in_progress' | 'closed' | 'awaiting_requisition';
+          updated_at: string;
         };
         Insert: {
           id?: number;
@@ -185,6 +190,11 @@ export interface Database {
           equipment_id?: string | null;
           is_judicial_requisition?: boolean;
           created_at?: string;
+          event_type?: string;
+          priority?: 'low' | 'medium' | 'high' | 'critical';
+          location?: string | null;
+          status?: 'new' | 'in_progress' | 'closed' | 'awaiting_requisition';
+          updated_at?: string;
         };
         Update: {
           id?: number;
@@ -194,6 +204,67 @@ export interface Database {
           user_id?: string;
           equipment_id?: string | null;
           is_judicial_requisition?: boolean;
+          event_type?: string;
+          priority?: 'low' | 'medium' | 'high' | 'critical';
+          location?: string | null;
+          status?: 'new' | 'in_progress' | 'closed' | 'awaiting_requisition';
+          updated_at?: string;
+        };
+      };
+      logbook_actions: {
+        Row: {
+          id: number;
+          logbook_entry_id: number;
+          action_type: string;
+          description: string;
+          timestamp: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          logbook_entry_id: number;
+          action_type: string;
+          description: string;
+          timestamp: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          logbook_entry_id?: number;
+          action_type?: string;
+          description?: string;
+          timestamp?: string;
+          user_id?: string;
+        };
+      };
+      video_bookmarks: {
+        Row: {
+          id: number;
+          logbook_entry_id: number;
+          equipment_id: string;
+          start_time: string;
+          end_time: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          logbook_entry_id: number;
+          equipment_id: string;
+          start_time: string;
+          end_time: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          logbook_entry_id?: number;
+          equipment_id?: string;
+          start_time?: string;
+          end_time?: string;
+          description?: string | null;
         };
       };
       access_requests: {
