@@ -29,6 +29,11 @@ export const useEquipments = () => {
   // Créer un nouvel équipement
   const createEquipment = async (equipmentData: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
+      // Validation des données requises
+      if (!equipmentData.name || !equipmentData.model) {
+        throw new Error('Le nom et le modèle sont requis');
+      }
+
       const { data, error } = await supabase
         .from('equipements')
         .insert([{

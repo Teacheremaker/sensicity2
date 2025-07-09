@@ -6,6 +6,7 @@ import { EquipmentForm } from './EquipmentForm';
 import { EquipmentDetails } from './EquipmentDetails';
 import { EquipmentFilters } from './EquipmentFilters';
 import { EquipmentStats } from './EquipmentStats';
+import { ImportExportActions } from './ImportExportActions';
 
 const getStatusColor = (status: Equipment['status']) => {
   switch (status) {
@@ -59,6 +60,18 @@ export const EquipmentList: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'stats'>('list');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fonction pour gérer l'import
+  const handleImport = async (importedEquipments: Partial<Equipment>[]) => {
+    try {
+      for (const equipmentData of importedEquipments) {
+        await createEquipment(equipmentData as Omit<Equipment, 'id' | 'createdAt' | 'updatedAt'>);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'import:', error);
+      throw error;
+    }
+  };
 
   const filteredEquipments = equipments.filter(equipment => {
     const matchesSearch = filters.search === '' || 
@@ -220,6 +233,22 @@ export const EquipmentList: React.FC = () => {
             <Plus className="h-4 w-4 mr-2" />
             Ajouter un équipement
           </button>
+        </div>
+      </div>
+
+      {/* Actions d'import/export */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Import / Export</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Exportez vos données ou importez des équipements depuis un fichier Excel
+            </p>
+          </div>
+          <ImportExportActions 
+            equipments={filteredEquipments} 
+            onImport={handleImport}
+          />
         </div>
       </div>
 
