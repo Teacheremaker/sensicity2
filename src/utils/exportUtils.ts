@@ -1,14 +1,8 @@
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { Equipment } from '../types';
 
-// Déclaration pour TypeScript
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
 
 // Export Excel
 export const exportToExcel = (equipments: Equipment[], filename: string = 'inventaire_equipements') => {
@@ -94,7 +88,7 @@ export const exportToPDF = (equipments: Equipment[], filename: string = 'inventa
   ]);
 
   // Créer le tableau
-  doc.autoTable({
+  autoTable(doc, {
     head: [['Nom', 'Type', 'Modèle', 'Statut', 'Localisation', 'Installation', 'Maintenance', 'Conformité']],
     body: tableData,
     startY: 50,
