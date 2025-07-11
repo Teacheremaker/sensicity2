@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { Shield, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
-interface LoginFormProps {
-  onLogin: (email: string, password: string) => void;
-  isLoading?: boolean;
-  error?: string;
-}
-
-export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading, error }) => {
+export const LoginForm: React.FC = () => {
+  const { login, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(email, password);
+    setError('');
+    
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.error || 'Erreur de connexion');
+    }
   };
 
   return (
@@ -88,10 +90,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, isLoading, error 
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Connexion...' : 'Se connecter'}
+              {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </div>
 

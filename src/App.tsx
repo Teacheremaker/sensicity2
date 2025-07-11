@@ -4,8 +4,10 @@ import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { EquipmentList } from './components/Equipment/EquipmentList';
-import { LoginForm } from './components/Auth/LoginForm';
 import { LogbookList } from './components/Logbook/LogbookList';
+import { UsersList } from './components/Users/UsersList';
+import { LoginForm } from './components/Auth/LoginForm';
+import { AuthContext, useAuthProvider } from './hooks/useAuth';
 
 // Simulation d'un utilisateur connecté
 const mockUser = {
@@ -21,10 +23,8 @@ const mockUser = {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const authProvider = useAuthProvider();
   const [activeSection, setActiveSection] = useState('dashboard');
-  const [loginError, setLoginError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
   // Écouter les événements de navigation depuis le header
   useEffect(() => {
@@ -35,26 +35,6 @@ function App() {
     window.addEventListener('navigate', handleNavigate as EventListener);
     return () => window.removeEventListener('navigate', handleNavigate as EventListener);
   }, []);
-
-  const handleLogin = async (email: string, password: string) => {
-    setIsLoading(true);
-    setLoginError('');
-
-    // Simulation d'une authentification
-    setTimeout(() => {
-      if (email === 'admin@sensicity.fr' && password === 'admin123') {
-        setIsAuthenticated(true);
-      } else {
-        setLoginError('Identifiants incorrects');
-      }
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setActiveSection('dashboard');
-  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -94,10 +74,7 @@ function App() {
         );
       case 'users':
         return (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold text-gray-900">Gestion des Utilisateurs</h2>
-            <p className="text-gray-600 mt-2">Module en cours de développement</p>
-          </div>
+          <UsersList />
         );
       case 'settings':
         return (
@@ -111,29 +88,37 @@ function App() {
     }
   };
 
-  if (!isAuthenticated) {
+  if (authProvider.loading) {
     return (
-      <LoginForm 
-        onLogin={handleLogin} 
-        isLoading={isLoading}
-        error={loginError}
-      />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!authProvider.user) {
+    return (
+      <AuthContext.Provider value={authProvider}>
+        <LoginForm />
+      </AuthContext.Provider>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header user={mockUser} onLogout={handleLogout} />
-      <div className="flex">
-        <Sidebar 
-          activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
-        />
-        <main className="flex-1 p-8">
-          {renderContent()}
-        </main>
+    <AuthContext.Provider value={authProvider}>
+      <div className="min-h-screen bg-gray-50">
+        <Header user={authProvider.user} onLogout={authProvider.logout} />
+        <div className="flex">
+          <Sidebar 
+            activeSection={activeSection} 
+            onSectionChange={setActiveSection} 
+          />
+          <main className="flex-1 p-8">
+            {renderContent()}
+          </main>
+        </div>
       </div>
-    </div>
+    </AuthContext.Provider>
   );
 }
 

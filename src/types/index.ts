@@ -7,6 +7,13 @@ export interface User {
   lastName: string;
   isActive: boolean;
   roleId: number;
+  status: 'active' | 'inactive' | 'suspended' | 'pending';
+  emailVerified: boolean;
+  phone?: string;
+  department?: string;
+  lastLogin?: string;
+  failedLoginAttempts: number;
+  lockedUntil?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -15,6 +22,72 @@ export interface Role {
   id: number;
   name: string;
   description: string;
+  isActive: boolean;
+  permissions?: Permission[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Group {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdBy?: string;
+  users?: User[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Permission {
+  id: number;
+  name: string;
+  description?: string;
+  module: string;
+  action: string;
+  createdAt: string;
+}
+
+export interface UserGroup {
+  id: number;
+  userId: string;
+  groupId: number;
+  assignedBy?: string;
+  assignedAt: string;
+}
+
+export interface RolePermission {
+  id: number;
+  roleId: number;
+  permissionId: number;
+  grantedBy?: string;
+  createdAt: string;
+}
+
+export interface UserSession {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: string;
+  ipAddress?: string;
+  userAgent?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface UserAuditLog {
+  id: number;
+  userId?: string;
+  action: string;
+  targetType?: string;
+  targetId?: string;
+  oldValues?: Record<string, any>;
+  newValues?: Record<string, any>;
+  ipAddress?: string;
+  userAgent?: string;
+  success: boolean;
+  errorMessage?: string;
+  createdAt: string;
 }
 
 export interface Equipment {
