@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Shield, Eye, EyeOff } from 'lucide-react';
+import { Shield, Eye, EyeOff, AlertCircle, Info } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export const LoginForm: React.FC = () => {
   const { login, loading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@sensicity.fr');
+  const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
@@ -13,10 +13,28 @@ export const LoginForm: React.FC = () => {
     e.preventDefault();
     setError('');
     
-    const result = await login(email, password);
+    if (!email.trim() || !password.trim()) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+    
+    const result = await login(email.trim(), password);
     if (!result.success) {
       setError(result.error || 'Erreur de connexion');
     }
+  };
+
+  const demoAccounts = [
+    { email: 'admin@sensicity.fr', password: 'admin123', role: 'Administrateur' },
+    { email: 'operateur@sensicity.fr', password: 'demo123', role: 'Opérateur CSU' },
+    { email: 'dpo@sensicity.fr', password: 'demo123', role: 'DPO' },
+    { email: 'technicien@sensicity.fr', password: 'demo123', role: 'Technicien' }
+  ];
+
+  const handleDemoLogin = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    setError('');
   };
 
   return (
@@ -83,7 +101,12 @@ export const LoginForm: React.FC = () => {
 
           {error && (
             <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+              <div className="flex">
+                <AlertCircle className="h-5 w-5 text-red-400" />
+                <div className="ml-3">
+                  <div className="text-sm text-red-700">{error}</div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -97,13 +120,46 @@ export const LoginForm: React.FC = () => {
             </button>
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Compte de démonstration :<br />
-              <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                admin@sensicity.fr / admin123
-              </span>
-            </p>
+          {/* Comptes de démonstration */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-gray-50 text-gray-500">Comptes de démonstration</span>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {demoAccounts.map((account, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleDemoLogin(account.email, account.password)}
+                  className="w-full flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{account.role}</p>
+                    <p className="text-xs text-gray-500">{account.email}</p>
+                  </div>
+                  <div className="text-xs text-gray-400 font-mono">
+                    {account.password}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex">
+                <Info className="h-5 w-5 text-blue-400" />
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Mode démonstration :</strong> Cliquez sur un compte ci-dessus pour vous connecter automatiquement et tester les différents niveaux d'accès.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </div>
