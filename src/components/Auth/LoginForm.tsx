@@ -51,16 +51,10 @@ export const LoginForm: React.FC = () => {
     }
   ];
 
-  const handleDemoLogin = async (demoEmail: string, demoPassword: string) => {
+  const handleDemoLogin = (demoEmail: string, demoPassword: string) => {
     setEmail(demoEmail);
     setPassword(demoPassword);
     setError('');
-    
-    // Connexion automatique
-    const result = await login(demoEmail, demoPassword);
-    if (!result.success) {
-      setError(result.error || 'Erreur de connexion');
-    }
   };
 
   return (
@@ -188,7 +182,7 @@ export const LoginForm: React.FC = () => {
                 <Info className="h-5 w-5 text-blue-400 flex-shrink-0" />
                 <div className="ml-3">
                   <p className="text-sm text-blue-700">
-                    <strong>Mode démonstration :</strong> Cliquez sur un compte ci-dessus pour vous connecter automatiquement. Les utilisateurs sont créés automatiquement s'ils n'existent pas.
+                    <strong>Mode démonstration :</strong> Cliquez sur un compte ci-dessus pour pré-remplir les identifiants.
                   </p>
                 </div>
               </div>

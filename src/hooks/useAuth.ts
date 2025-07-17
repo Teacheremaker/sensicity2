@@ -71,22 +71,21 @@ export const useAuthProvider = () => {
 
         setUser(transformedUser);
 
-        // Pour la démo, on donne toutes les permissions à tous les utilisateurs
-        // En production, vous devriez charger les vraies permissions depuis la base
-        const mockPermissions: Permission[] = [
-          { id: 1, name: 'equipment.read', description: 'Lire équipements', module: 'equipment', action: 'read', createdAt: new Date().toISOString() },
-          { id: 2, name: 'equipment.create', description: 'Créer équipements', module: 'equipment', action: 'create', createdAt: new Date().toISOString() },
-          { id: 3, name: 'equipment.update', description: 'Modifier équipements', module: 'equipment', action: 'update', createdAt: new Date().toISOString() },
-          { id: 4, name: 'equipment.delete', description: 'Supprimer équipements', module: 'equipment', action: 'delete', createdAt: new Date().toISOString() },
-          { id: 5, name: 'logbook.read', description: 'Lire main courante', module: 'logbook', action: 'read', createdAt: new Date().toISOString() },
-          { id: 6, name: 'logbook.create', description: 'Créer entrées main courante', module: 'logbook', action: 'create', createdAt: new Date().toISOString() },
-          { id: 7, name: 'logbook.update', description: 'Modifier main courante', module: 'logbook', action: 'update', createdAt: new Date().toISOString() },
-          { id: 8, name: 'users.read', description: 'Lire utilisateurs', module: 'users', action: 'read', createdAt: new Date().toISOString() },
-          { id: 9, name: 'users.create', description: 'Créer utilisateurs', module: 'users', action: 'create', createdAt: new Date().toISOString() },
-          { id: 10, name: 'users.update', description: 'Modifier utilisateurs', module: 'users', action: 'update', createdAt: new Date().toISOString() }
-        ];
+        // Charger les permissions basées sur le rôle
+        if (userData.role_id) {
+          const { data: rolePermissions, error: permissionsError } = await supabase
+            .from('role_permissions')
+            .select('permissions (*)')
+            .eq('role_id', userData.role_id);
 
-        setPermissions(mockPermissions);
+          if (permissionsError) {
+            console.error('Erreur lors du chargement des permissions:', permissionsError);
+            // Gérer l'erreur, peut-être déconnecter l'utilisateur
+          } else {
+            const userPermissions = rolePermissions?.map(rp => rp.permissions) as Permission[] || [];
+            setPermissions(userPermissions);
+          }
+        }
 
         // Mettre à jour la dernière connexion
         await supabase
@@ -108,109 +107,33 @@ export const useAuthProvider = () => {
     }
   };
 
-  // Connexion simplifiée pour la démo
+  // Connexion avec Supabase Auth
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
     try {
-      setLoading(true);
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      // Vérifier si l'utilisateur existe
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email.toLowerCase())
-        .single();
+      if (authError) {
+        return { success: false, error: authError.message };
+      }
 
-      if (error || !userData) {
-        // Si l'utilisateur n'existe pas, on le crée automatiquement pour la démo
-        if (error?.code === 'PGRST116') { // Pas de résultat trouvé
-          console.log('Utilisateur non trouvé, création automatique pour la démo...');
-          
-          // Déterminer le rôle basé sur l'email
-          let roleId = 1; // Admin par défaut
-          let firstName = 'Utilisateur';
-          let lastName = 'Demo';
-          let department = 'Démonstration';
-
-          if (email.includes('operateur')) {
-            roleId = 2; // Opérateur CSU
-            firstName = 'Marie';
-            lastName = 'Martin';
-            department = 'Centre de Supervision Urbaine';
-          } else if (email.includes('dpo')) {
-            roleId = 3; // DPO
-            firstName = 'Pierre';
-            lastName = 'Durand';
-            department = 'Conformité et Protection des Données';
-          } else if (email.includes('technicien')) {
-            roleId = 4; // Technicien
-            firstName = 'Sophie';
-            lastName = 'Leroy';
-            department = 'Service Technique';
-          } else if (email.includes('admin')) {
-            firstName = 'Jean';
-            lastName = 'Dupont';
-            department = 'Direction Générale';
-          }
-
-          // Créer l'utilisateur
-          const { data: newUser, error: createError } = await supabase
-            .from('users')
-            .insert([{
-              email: email.toLowerCase(),
-              first_name: firstName,
-              last_name: lastName,
-              role_id: roleId,
-              is_active: true,
-              status: 'active',
-              email_verified: true,
-              department: department
-            }])
-            .select()
-            .single();
-
-          if (createError) {
-            console.error('Erreur lors de la création de l\'utilisateur:', createError);
-            return { success: false, error: 'Erreur lors de la création du compte' };
-          }
-
-          // Utiliser le nouvel utilisateur
-          const success = await loadUserWithPermissions(newUser.id);
-          if (success) {
-            localStorage.setItem('sensicity_user_id', newUser.id);
-            return { success: true };
-          }
+      if (authData.user) {
+        const success = await loadUserWithPermissions(authData.user.id);
+        if (success) {
+          return { success: true };
+        } else {
+          // Si loadUserWithPermissions échoue, déconnecter l'utilisateur pour éviter un état incohérent
+          await supabase.auth.signOut();
+          return { success: false, error: 'Erreur lors du chargement du profil utilisateur.' };
         }
-        
-        return { success: false, error: 'Identifiants incorrects' };
       }
-
-      // Vérifier le statut du compte
-      if (!userData.is_active || userData.status !== 'active') {
-        return { 
-          success: false, 
-          error: `Compte ${userData.status || 'inactif'}. Contactez l'administrateur.` 
-        };
-      }
-
-      // Pour la démo, on accepte tous les mots de passe
-      const isValidPassword = true; // Simplification pour la démo
-
-      if (!isValidPassword) {
-        return { success: false, error: 'Identifiants incorrects' };
-      }
-
-      // Connexion réussie
-      const success = await loadUserWithPermissions(userData.id);
-      
-      if (success) {
-        localStorage.setItem('sensicity_user_id', userData.id);
-        return { success: true };
-      } else {
-        return { success: false, error: 'Erreur lors du chargement du profil utilisateur' };
-      }
+      return { success: false, error: 'Utilisateur non trouvé.' };
     } catch (error) {
       console.error('Erreur de connexion:', error);
-      return { success: false, error: 'Erreur de connexion au serveur' };
+      return { success: false, error: 'Une erreur inattendue est survenue.' };
     } finally {
       setLoading(false);
     }
@@ -219,9 +142,9 @@ export const useAuthProvider = () => {
   // Déconnexion
   const logout = async () => {
     try {
+      await supabase.auth.signOut();
       setUser(null);
       setPermissions([]);
-      localStorage.removeItem('sensicity_user_id');
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
     }
@@ -244,26 +167,22 @@ export const useAuthProvider = () => {
     }
   };
 
-  // Vérifier la session au chargement
+  // Gérer les changements d'état d'authentification
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const storedUserId = localStorage.getItem('sensicity_user_id');
-        if (storedUserId) {
-          const success = await loadUserWithPermissions(storedUserId);
-          if (!success) {
-            localStorage.removeItem('sensicity_user_id');
-          }
-        }
-      } catch (error) {
-        console.error('Erreur de vérification de session:', error);
-        localStorage.removeItem('sensicity_user_id');
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await loadUserWithPermissions(session.user.id);
+      } else {
+        setUser(null);
+        setPermissions([]);
       }
-    };
+      setLoading(false);
+    });
 
-    checkSession();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return {
